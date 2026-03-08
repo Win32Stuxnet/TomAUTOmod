@@ -3,8 +3,11 @@ from __future__ import annotations
 import argparse
 import asyncio
 import logging
+import os
 import sys
 from pathlib import Path
+
+from dotenv import load_dotenv
 
 import numpy as np
 
@@ -112,9 +115,11 @@ def train(X: np.ndarray, y: np.ndarray, output_path: Path) -> None:
 
 
 async def main() -> None:
+    load_dotenv()
+
     parser = argparse.ArgumentParser(description="Train moderation classifier")
-    parser.add_argument("--db", default="mongodb://localhost:27017", help="MongoDB URI")
-    parser.add_argument("--db-name", default="discord_mod_bot", help="Database name")
+    parser.add_argument("--db", default=os.getenv("MONGODB_URI", "mongodb://localhost:27017"), help="MongoDB URI")
+    parser.add_argument("--db-name", default=os.getenv("MONGODB_DB_NAME", "discord_mod_bot"), help="Database name")
     parser.add_argument("--out", default="model.joblib", help="Output model path")
     args = parser.parse_args()
 
