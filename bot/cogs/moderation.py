@@ -78,28 +78,33 @@ class Moderation(commands.Cog):
             embed=success_embed(f"**{member}** kicked. (Case #{case.case_id})")
         )
 
-    @app_commands.command(name="ban", description="Ban a member from the server")
-    @app_commands.describe(member="Member to ban", reason="Reason for the ban", delete_days="Days of messages to delete (0-7)")
+    @app_commands.command(name="ban", description="Ban a user from the server")
+    @app_commands.describe(user="User to ban (works even if not in server)", reason="Reason for the ban", delete_days="Days of messages to delete (0-7)")
     @app_commands.default_permissions(ban_members=True)
     async def ban(
         self,
         interaction: discord.Interaction,
-        member: discord.Member,
+        user: discord.User,
         reason: str | None = None,
         delete_days: app_commands.Range[int, 0, 7] = 0,
     ) -> None:
-        ok, err = can_moderate(interaction.user, member)
-        if not ok:
-            return await interaction.response.send_message(embed=error_embed(err), ephemeral=True)
+        # If the user is in the server, run full permission checks
+        member = interaction.guild.get_member(user.id)
+        if member:
+            ok, err = can_moderate(interaction.user, member)
+            if not ok:
+                return await interaction.response.send_message(embed=error_embed(err), ephemeral=True)
+        elif user.id == interaction.user.id:
+            return await interaction.response.send_message(embed=error_embed("You cannot moderate yourself."), ephemeral=True)
 
-        await self._dm_user(member, interaction.guild, "banned", reason)
-        await member.ban(reason=reason, delete_message_days=delete_days)
+        await self._dm_user(user, interaction.guild, "banned", reason)
+        await interaction.guild.ban(user, reason=reason, delete_message_days=delete_days)
         case = await self.cases.create_case(
-            guild=interaction.guild, action="ban", user=member,
+            guild=interaction.guild, action="ban", user=user,
             moderator=interaction.user, reason=reason,
         )
         await interaction.response.send_message(
-            embed=success_embed(f"**{member}** banned. (Case #{case.case_id})")
+            embed=success_embed(f"**{user}** banned. (Case #{case.case_id})")
         )
 
     @app_commands.command(name="unban", description="Unban a user by ID")
