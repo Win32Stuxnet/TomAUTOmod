@@ -23,7 +23,6 @@ class Owner(commands.Cog):
         scope: Literal["global", "guild"] = "global",
     ) -> None:
         if scope == "guild" and ctx.guild:
-            self.bot.tree.copy_global_to(guild=ctx.guild)
             synced = await self.bot.tree.sync(guild=ctx.guild)
             await ctx.send(f"Synced {len(synced)} commands to this guild.")
         else:
