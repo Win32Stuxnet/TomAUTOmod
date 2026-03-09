@@ -88,14 +88,14 @@ class Moderation(commands.Cog):
         reason: str | None = None,
         delete_days: app_commands.Range[int, 0, 7] = 0,
     ) -> None:
-        # If the user is in the server, run full permission checks
+        if user.id == interaction.user.id:
+            return await interaction.response.send_message(embed=error_embed("You cannot moderate yourself."), ephemeral=True)
+
         member = interaction.guild.get_member(user.id)
         if member:
             ok, err = can_moderate(interaction.user, member)
             if not ok:
                 return await interaction.response.send_message(embed=error_embed(err), ephemeral=True)
-        elif user.id == interaction.user.id:
-            return await interaction.response.send_message(embed=error_embed("You cannot moderate yourself."), ephemeral=True)
 
         await self._dm_user(user, interaction.guild, "banned", reason)
         await interaction.guild.ban(user, reason=reason, delete_message_days=delete_days)
