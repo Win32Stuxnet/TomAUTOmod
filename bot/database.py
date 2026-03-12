@@ -63,6 +63,8 @@ class Database:
         await self.ml_training_data.create_indexes([
             IndexModel([("guild_id", ASCENDING), ("message_id", ASCENDING)]),
             IndexModel([("label", ASCENDING)]),
+            IndexModel([("guild_id", ASCENDING), ("label", ASCENDING), ("confidence", DESCENDING)]),
+            IndexModel([("guild_id", ASCENDING), ("label", ASCENDING), ("created_at", DESCENDING)]),
         ])
 
         log.info("All database indexes ensured.")
