@@ -95,13 +95,10 @@ def main() -> None:
     mongo_p = export_sub.add_parser("mongodb", help="Export from bot MongoDB")
     mongo_p.add_argument("--labeled-only", action="store_true", help="Only export labeled samples")
 
-    # label
     label_p = sub.add_parser("label", help="Apply rule-based labels")
     label_p.add_argument("--input", help="Input directory (default: data/raw)")
     label_p.add_argument("--output", help="Output directory (default: data/labeled)")
     label_p.add_argument("--wordlists", help="Wordlists directory (default: wordlists/)")
-
-    # compile
     compile_p = sub.add_parser("compile", help="Compile labeled data into dataset")
     compile_p.add_argument("--input", help="Input directory (default: data/labeled)")
     compile_p.add_argument("--output", help="Output directory (default: data/compiled)")
