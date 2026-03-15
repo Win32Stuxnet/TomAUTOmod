@@ -51,6 +51,22 @@ class Config(commands.Cog):
             embed=success_embed(f"ML data collection **{status}** for this server.")
         )
 
+    @config_group.command(name="retention", description="Set how many days message content is kept for review")
+    @app_commands.describe(days="Number of days to retain message content (1-90)")
+    async def set_retention(self, interaction: discord.Interaction, days: app_commands.Range[int, 1, 90]) -> None:
+        await self.config.update(interaction.guild.id, log_retention_days=days)
+        await interaction.response.send_message(
+            embed=success_embed(f"Log retention set to **{days} days**.")
+        )
+
+    @config_group.command(name="reviewchannel", description="Set the channel for review notifications")
+    @app_commands.describe(channel="Channel for ML review notifications")
+    async def set_review_channel(self, interaction: discord.Interaction, channel: discord.TextChannel) -> None:
+        await self.config.update(interaction.guild.id, review_channel_id=channel.id)
+        await interaction.response.send_message(
+            embed=success_embed(f"Review channel set to {channel.mention}.")
+        )
+
     @config_group.command(name="show", description="Show current server configuration")
     async def show_config(self, interaction: discord.Interaction) -> None:
         cfg = await self.config.get(interaction.guild.id)
@@ -80,6 +96,8 @@ class Config(commands.Cog):
             inline=False,
         )
         embed.add_field(name="ML Consent", value="Enabled" if cfg.ml_consent else "Disabled", inline=True)
+        embed.add_field(name="Log Retention", value=f"{cfg.log_retention_days} days", inline=True)
+        embed.add_field(name="Review Channel", value=ch(cfg.review_channel_id), inline=True)
         await interaction.response.send_message(embed=embed)
 
     @config_group.command(name="reset", description="Reset all server configuration to defaults")

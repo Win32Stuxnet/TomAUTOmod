@@ -33,6 +33,10 @@ class Database:
         return self._db["message_cache"]
 
     @property
+    def custom_commands(self):
+        return self._db["custom_commands"]
+
+    @property
     def ml_training_data(self):
         return self._db["ml_training_data"]
 
@@ -58,6 +62,14 @@ class Database:
         await self.message_cache.create_indexes([
             IndexModel([("message_id", ASCENDING)], unique=True),
             IndexModel([("created_at", ASCENDING)], expireAfterSeconds=7 * 24 * 3600),
+        ])
+
+        await self.custom_commands.create_indexes([
+            IndexModel([("guild_id", ASCENDING), ("name", ASCENDING)], unique=True),
+        ])
+
+        await self._db["web_sessions"].create_indexes([
+            IndexModel([("updated_at", ASCENDING)], expireAfterSeconds=86400),
         ])
 
         await self.ml_training_data.create_indexes([
