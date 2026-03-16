@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip show:*)",
+      "mcp__claude_ai_Context7__resolve-library-id",
+      "WebSearch",
+      "Bash(python:*)"
+    ]
+  }
+}

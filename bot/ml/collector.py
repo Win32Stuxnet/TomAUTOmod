@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 import time
 from collections import defaultdict
@@ -12,6 +13,7 @@ from pathlib import Path
 from bot.ml.features import extract_features
 from bot.ml.predictor import HeuristicPredictor, Prediction, Predictor, TrainedPredictor
 from bot.models.ml_data import MLTrainingSample
+from bot.services.config_service import ConfigService
 
 MODEL_PATH = Path(__file__).parent.parent.parent / "model.joblib"
 
@@ -29,6 +31,8 @@ class Collector:
     def __init__(self, bot: ModBot, *, predictor: Predictor | None = None) -> None:
         self.bot = bot
         self.db = bot.db
+        self._result_cache: dict[int, Prediction | None] = {}
+        self._inflight: dict[int, asyncio.Task[Prediction | None]] = {}
 
         if predictor:
             self.predictor: Predictor = predictor
@@ -45,7 +49,29 @@ class Collector:
         if not message.guild or message.author.bot:
             return None
 
-        from bot.services.config_service import ConfigService
+        message_id = getattr(message, "id", None)
+        if message_id is not None:
+            if message_id in self._result_cache:
+                return self._result_cache[message_id]
+
+            task = self._inflight.get(message_id)
+            if task is not None:
+                return await task
+
+            task = asyncio.create_task(self._process_message(message))
+            self._inflight[message_id] = task
+            try:
+                result = await task
+            finally:
+                self._inflight.pop(message_id, None)
+
+            self._result_cache[message_id] = result
+            self._trim_result_cache()
+            return result
+
+        return await self._process_message(message)
+
+    async def _process_message(self, message: discord.Message) -> Prediction | None:
         config_svc = ConfigService(self.db)
         config = await config_svc.get(message.guild.id)
         if not config.ml_consent:
@@ -55,19 +81,30 @@ class Collector:
         temporal = self._update_temporal(message.author.id)
         features.update(temporal)
 
+        prediction = await self.predictor.predict(features)
+
         sample = MLTrainingSample(
             guild_id=message.guild.id,
             message_id=message.id,
+            channel_id=message.channel.id,
             user_id=message.author.id,
+            content=message.content[:300],
             features=features,
+            prediction=prediction.label,
+            confidence=prediction.confidence,
         )
         await self.db.ml_training_data.insert_one(sample.to_doc())
-
-        prediction = await self.predictor.predict(features)
 
         if prediction.label != "safe":
             return prediction
         return None
+
+    def _trim_result_cache(self) -> None:
+        if len(self._result_cache) <= 1000:
+            return
+
+        for key in list(self._result_cache.keys())[:500]:
+            self._result_cache.pop(key, None)
 
     def _update_temporal(self, user_id: int) -> dict:
         now = time.monotonic()

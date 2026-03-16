@@ -1,0 +1,8 @@
+Collecting itsdangerous
+  Using cached itsdangerous-2.2.0-py3-none-any.whl.metadata (1.9 kB)
+Using cached itsdangerous-2.2.0-py3-none-any.whl (16 kB)
+Installing collected packages: itsdangerous
+Successfully installed itsdangerous-2.2.0
+
+[notice] A new release of pip is available: 25.3 -> 26.0.1
+[notice] To update, run: python.exe -m pip install --upgrade pip

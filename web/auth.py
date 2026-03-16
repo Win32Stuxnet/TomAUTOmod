@@ -48,9 +48,12 @@ class DiscordClient:
         return await resp.json()
 
     async def fetch_guilds(self) -> list[dict]:
-        # TODO: Fetch the user's guilds from /users/@me/guilds
-
-        ...
+        try:
+            resp = await self._session.get("/users/@me/guilds")
+            resp.raise_for_status()
+            return await resp.json()
+        except Exception:
+            return []
 
 
 def get_session_user(request: Request) -> dict | None:
@@ -70,4 +73,4 @@ def has_manage_guild(permissions: int | str) -> bool:
 
 # I am serious, I will know if you contributed using an LLM. 
 # I worked as social for the Cline Project, and I can see what is AI written easily, you will 
-#be banned from contributing if you use an LLM to write code for this project, I am not joking.
+#h

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ModBot - Server Settings</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/dashboard" class="nav-brand">ModBot</a>
+        <div class="nav-right">
+            <a href="/logout" class="btn btn-sm">Logout</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="tabs">
+            <button class="tab active" data-tab="config">Configuration</button>
+            <button class="tab" data-tab="filters">Filters</button>
+            <button class="tab" data-tab="commands">Custom Commands</button>
+        </div>
+
+        <!-- Config Tab -->
+        <section id="tab-config" class="tab-content active">
+            <h3>Server Configuration</h3>
+            <form id="config-form" class="form-grid">
+                <div class="form-group">
+                    <label>Mod Log Channel ID</label>
+                    <input type="text" name="mod_log_channel_id" placeholder="Channel ID">
+                </div>
+                <div class="form-group">
+                    <label>Audit Log Channel ID</label>
+                    <input type="text" name="audit_log_channel_id" placeholder="Channel ID">
+                </div>
+                <div class="form-group">
+                    <label>Welcome Channel ID</label>
+                    <input type="text" name="welcome_channel_id" placeholder="Channel ID">
+                </div>
+                <div class="form-group">
+                    <label>Review Channel ID</label>
+                    <input type="text" name="review_channel_id" placeholder="Channel ID">
+                </div>
+                <div class="form-group">
+                    <label>Aggression Alert Channel ID</label>
+                    <input type="text" name="aggression_channel_id" placeholder="Channel ID">
+                </div>
+                <div class="form-group full">
+                    <label>Welcome Message</label>
+                    <textarea name="welcome_message" rows="2" placeholder="Welcome {user} to the server!"></textarea>
+                </div>
+
+                <h4 class="full">Anti-Spam</h4>
+                <div class="form-group">
+                    <label class="toggle-label">
+                        <input type="checkbox" name="antispam_enabled">
+                        Enabled
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>Max Messages</label>
+                    <input type="number" name="antispam_max_messages" min="2" max="20">
+                </div>
+                <div class="form-group">
+                    <label>Interval (seconds)</label>
+                    <input type="number" name="antispam_interval_seconds" min="1" max="60">
+                </div>
+                <div class="form-group">
+                    <label>Action</label>
+                    <select name="antispam_action">
+                        <option value="timeout">Timeout</option>
+                        <option value="kick">Kick</option>
+                        <option value="ban">Ban</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Duration (seconds)</label>
+                    <input type="number" name="antispam_duration_seconds" min="60" max="86400">
+                </div>
+
+                <h4 class="full">Raid Protection</h4>
+                <div class="form-group">
+                    <label class="toggle-label">
+                        <input type="checkbox" name="raid_protection_enabled">
+                        Enabled
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>Join Threshold</label>
+                    <input type="number" name="raid_join_threshold" min="3" max="50">
+                </div>
+                <div class="form-group">
+                    <label>Join Interval (seconds)</label>
+                    <input type="number" name="raid_join_interval_seconds" min="5" max="120">
+                </div>
+
+                <h4 class="full">ML & Logging</h4>
+                <div class="form-group">
+                    <label class="toggle-label">
+                        <input type="checkbox" name="ml_consent">
+                        ML Data Collection
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>Log Retention (days)</label>
+                    <input type="number" name="log_retention_days" min="1" max="90">
+                </div>
+                <div class="form-group">
+                    <label>Aggression Strike Count</label>
+                    <input type="number" name="aggression_strike_count" min="1" max="10">
+                </div>
+                <div class="form-group">
+                    <label>Aggression Window (hours)</label>
+                    <input type="number" name="aggression_window_hours" min="1" max="24">
+                </div>
+
+                <div class="form-actions full">
+                    <button type="submit" class="btn btn-primary">Save Configuration</button>
+                    <span id="config-status" class="status-msg"></span>
+                </div>
+            </form>
+        </section>
+
+        <!-- Filters Tab -->
+        <section id="tab-filters" class="tab-content">
+            <h3>Filter Rules</h3>
+            <form id="filter-add-form" class="inline-form">
+                <select name="rule_type">
+                    <option value="word">Word</option>
+                    <option value="regex">Regex</option>
+                    <option value="link">Link</option>
+                </select>
+                <input type="text" name="pattern" placeholder="Pattern" required>
+                <select name="action">
+                    <option value="delete">Delete</option>
+                    <option value="warn">Warn</option>
+                    <option value="timeout">Timeout</option>
+                </select>
+                <button type="submit" class="btn btn-primary">Add Filter</button>
+            </form>
+            <table class="data-table" id="filters-table">
+                <thead>
+                    <tr><th>Type</th><th>Pattern</th><th>Action</th><th></th></tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </section>
+
+        <!-- Commands Tab -->
+        <section id="tab-commands" class="tab-content">
+            <h3>Custom Commands</h3>
+            <form id="command-add-form" class="inline-form">
+                <input type="text" name="name" placeholder="Command name" required>
+                <input type="text" name="response" placeholder="Response text" required>
+                <input type="text" name="description" placeholder="Description (optional)">
+                <button type="submit" class="btn btn-primary">Add Command</button>
+            </form>
+            <table class="data-table" id="commands-table">
+                <thead>
+                    <tr><th>Name</th><th>Response</th><th>Description</th><th></th></tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </section>
+    </main>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        const GUILD_ID = "{{ guild_id }}";
+    </script>
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

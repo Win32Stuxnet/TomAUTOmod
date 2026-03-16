@@ -10,6 +10,7 @@ from bot.bot import ModBot
 from bot.services.config_service import ConfigService
 from bot.services.message_cache_service import MessageCacheService
 from bot.utils.embeds import audit_embed
+from bot.views.label import QuickLabelView
 
 log = logging.getLogger(__name__)
 
@@ -54,7 +55,8 @@ class AuditLog(commands.Cog):
             ),
             user=message.author,
         )
-        await channel.send(embed=embed)
+        view = QuickLabelView(self.bot, message.guild.id, message.id)
+        await channel.send(embed=embed, view=view)
 
     @commands.Cog.listener()
     async def on_message_edit(self, before: discord.Message, after: discord.Message) -> None:

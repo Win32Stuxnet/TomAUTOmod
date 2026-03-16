@@ -40,6 +40,14 @@ class Database:
     def ml_training_data(self):
         return self._db["ml_training_data"]
 
+    @property
+    def aggression_strikes(self):
+        return self._db["aggression_strikes"]
+
+    @property
+    def aggression_training_data(self):
+        return self._db["aggression_training_data"]
+
     async def create_indexes(self) -> None:
         await self.guild_configs.create_indexes([
             IndexModel([("guild_id", ASCENDING)], unique=True),
@@ -77,6 +85,15 @@ class Database:
             IndexModel([("label", ASCENDING)]),
             IndexModel([("guild_id", ASCENDING), ("label", ASCENDING), ("confidence", DESCENDING)]),
             IndexModel([("guild_id", ASCENDING), ("label", ASCENDING), ("created_at", DESCENDING)]),
+        ])
+
+        await self.aggression_strikes.create_indexes([
+            IndexModel([("guild_id", ASCENDING), ("user_id", ASCENDING), ("created_at", DESCENDING)]),
+        ])
+
+        await self.aggression_training_data.create_indexes([
+            IndexModel([("guild_id", ASCENDING), ("label", ASCENDING)]),
+            IndexModel([("message_id", ASCENDING)]),
         ])
 
         log.info("All database indexes ensured.")

@@ -1,0 +1,23 @@
+reddit:
+  sort: controversial  # hot, new, controversial, top
+  limit: 1000          # comments per subreddit
+  subreddits: []       # user fills these in
+
+mongodb:
+  db_name: discord     # matches bot's MONGODB_DB_NAME
+
+labeler:
+  # leet speak substitutions for evasion detection
+  leet_map:
+    "0": "o"
+    "1": "i"
+    "3": "e"
+    "4": "a"
+    "5": "s"
+    "@": "a"
+    "$": "s"
+
+data:
+  raw_dir: data/raw
+  labeled_dir: data/labeled
+  compiled_dir: data/compiled
