@@ -20,8 +20,16 @@ class GuildConfig:
     raid_join_threshold: int = 10
     raid_join_interval_seconds: int = 10
     ml_consent: bool = False
+    log_retention_days: int = 30
+    review_channel_id: int | None = None
 
     def to_doc(self) -> dict:
+        """
+        Return a dictionary representation of this GuildConfig suitable for storage or serialization.
+        
+        Returns:
+            dict: A mapping of dataclass field names to their current values.
+        """
         return asdict(self)
 
     @classmethod

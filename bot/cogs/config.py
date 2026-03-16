@@ -45,14 +45,60 @@ class Config(commands.Cog):
     @config_group.command(name="mlconsent", description="Enable or disable ML data collection")
     @app_commands.describe(enabled="Whether to collect message data for ML training")
     async def set_ml_consent(self, interaction: discord.Interaction, enabled: bool) -> None:
+        """
+        Set whether machine-learning data collection is allowed for the guild.
+        
+        Updates the guild's configuration to enable or disable ML data collection and replies to the interaction with a success message.
+        
+        Parameters:
+            enabled (bool): True to enable ML data collection for the server, False to disable it.
+        """
         await self.config.update(interaction.guild.id, ml_consent=enabled)
         status = "enabled" if enabled else "disabled"
         await interaction.response.send_message(
             embed=success_embed(f"ML data collection **{status}** for this server.")
         )
 
+    @config_group.command(name="retention", description="Set how many days message content is kept for review")
+    @app_commands.describe(days="Number of days to retain message content (1-90)")
+    async def set_retention(self, interaction: discord.Interaction, days: app_commands.Range[int, 1, 90]) -> None:
+        """
+        Set the guild's log retention period.
+        
+        Updates the stored configuration for the invoking guild to use the specified number of days for log retention and sends a confirmation message.
+        
+        Parameters:
+            days (int): Number of days to retain logs; must be between 1 and 90.
+        """
+        await self.config.update(interaction.guild.id, log_retention_days=days)
+        await interaction.response.send_message(
+            embed=success_embed(f"Log retention set to **{days} days**.")
+        )
+
+    @config_group.command(name="reviewchannel", description="Set the channel for review notifications")
+    @app_commands.describe(channel="Channel for ML review notifications")
+    async def set_review_channel(self, interaction: discord.Interaction, channel: discord.TextChannel) -> None:
+        """
+        Set the guild's review channel and acknowledge the change.
+        
+        Updates the stored configuration for the invoking guild to set `review_channel_id` to the provided channel's ID, then sends a success reply mentioning that channel.
+        
+        Parameters:
+            interaction (discord.Interaction): The invoking interaction (used to identify the guild and send the reply).
+            channel (discord.TextChannel): The text channel to use for review messages; its ID will be stored.
+        """
+        await self.config.update(interaction.guild.id, review_channel_id=channel.id)
+        await interaction.response.send_message(
+            embed=success_embed(f"Review channel set to {channel.mention}.")
+        )
+
     @config_group.command(name="show", description="Show current server configuration")
     async def show_config(self, interaction: discord.Interaction) -> None:
+        """
+        Builds and sends an embed showing the invoking guild's current configuration.
+        
+        Retrieves the stored configuration for the interaction's guild and sends a single Discord embed containing: Mod Log, Audit Log, Welcome Channel, Auto Roles, Anti-Spam settings, Raid Protection settings, ML Consent, Log Retention, and Review Channel.
+        """
         cfg = await self.config.get(interaction.guild.id)
 
         def ch(cid: int | None) -> str:
@@ -80,6 +126,8 @@ class Config(commands.Cog):
             inline=False,
         )
         embed.add_field(name="ML Consent", value="Enabled" if cfg.ml_consent else "Disabled", inline=True)
+        embed.add_field(name="Log Retention", value=f"{cfg.log_retention_days} days", inline=True)
+        embed.add_field(name="Review Channel", value=ch(cfg.review_channel_id), inline=True)
         await interaction.response.send_message(embed=embed)
 
     @config_group.command(name="reset", description="Reset all server configuration to defaults")

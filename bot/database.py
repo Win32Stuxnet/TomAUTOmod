@@ -30,13 +30,50 @@ class Database:
 
     @property
     def message_cache(self):
+        """
+        Access the MongoDB collection used to cache messages; cached documents are configured to expire after 7 days.
+        
+        Returns:
+            Collection: The `message_cache` collection for storing cached message documents.
+        """
         return self._db["message_cache"]
 
     @property
+    def custom_commands(self):
+        """
+        Access the database collection that stores custom command documents.
+        
+        Returns:
+            The collection used to store custom command documents (documents keyed by guild and command name).
+        """
+        return self._db["custom_commands"]
+
+    @property
     def ml_training_data(self):
+        """
+        Access the MongoDB collection used to store machine learning training data.
+        
+        Returns:
+            Collection: The `ml_training_data` collection containing ML training examples and related metadata.
+        """
         return self._db["ml_training_data"]
 
     async def create_indexes(self) -> None:
+        """
+        Ensure required indexes exist on the database collections used by the application.
+        
+        Creates the following indexes:
+        - guild_configs: unique index on `guild_id`.
+        - cases: compound indexes on (`guild_id`, `case_id` descending) and (`guild_id`, `user_id`).
+        - filter_rules: index on `guild_id`.
+        - tickets: compound indexes on (`guild_id`, `channel_id`) and (`guild_id`, `status`).
+        - message_cache: unique index on `message_id` and TTL index on `created_at` that expires documents after 7 days.
+        - custom_commands: unique compound index on (`guild_id`, `name`).
+        - web_sessions: TTL index on `updated_at` that expires documents after 86400 seconds (24 hours).
+        - ml_training_data: indexes on (`guild_id`, `message_id`), `label`, (`guild_id`, `label`, `confidence` descending), and (`guild_id`, `label`, `created_at` descending).
+        
+        Logs an informational message when all indexes have been ensured.
+        """
         await self.guild_configs.create_indexes([
             IndexModel([("guild_id", ASCENDING)], unique=True),
         ])
@@ -58,6 +95,14 @@ class Database:
         await self.message_cache.create_indexes([
             IndexModel([("message_id", ASCENDING)], unique=True),
             IndexModel([("created_at", ASCENDING)], expireAfterSeconds=7 * 24 * 3600),
+        ])
+
+        await self.custom_commands.create_indexes([
+            IndexModel([("guild_id", ASCENDING), ("name", ASCENDING)], unique=True),
+        ])
+
+        await self._db["web_sessions"].create_indexes([
+            IndexModel([("updated_at", ASCENDING)], expireAfterSeconds=86400),
         ])
 
         await self.ml_training_data.create_indexes([
