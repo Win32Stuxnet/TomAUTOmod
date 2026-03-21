@@ -21,7 +21,7 @@ class Settings:
     # Web dashboard
     discord_client_id: str = field(default_factory=lambda: os.getenv("DISCORD_CLIENT_ID", ""))
     discord_client_secret: str = field(repr=False, default_factory=lambda: os.getenv("DISCORD_CLIENT_SECRET", ""))
-    web_secret_key: str = field(repr=False, default_factory=lambda: os.environ["WEB_SECRET_KEY"])
+    web_secret_key: str = field(repr=False, default_factory=lambda: os.getenv("WEB_SECRET_KEY", "change-me-in-production"))
     web_port: int = field(default_factory=lambda: int(os.getenv("WEB_PORT", "3000")))
     web_base_url: str = field(default_factory=lambda: os.getenv("WEB_BASE_URL", "http://localhost:3000"))
 

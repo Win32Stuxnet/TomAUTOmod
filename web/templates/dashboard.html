@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ModBot - Select Server</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <span class="nav-brand">ModBot</span>
+        <div class="nav-right">
+            <span class="nav-user">{{ username }}</span>
+            <a href="/logout" class="btn btn-sm">Logout</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <h2>Select a Server</h2>
+        <p class="muted">Showing servers where you have Manage Server permission.</p>
+        <div class="guild-grid">
+            {{ guild_cards }}
+        </div>
+    </main>
+</body>
+</html>

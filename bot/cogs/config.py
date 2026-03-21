@@ -51,6 +51,59 @@ class Config(commands.Cog):
             embed=success_embed(f"ML data collection **{status}** for this server.")
         )
 
+    @config_group.command(name="retention", description="Set how many days message content is kept for review")
+    @app_commands.describe(days="Number of days to retain message content (1-90)")
+    async def set_retention(self, interaction: discord.Interaction, days: app_commands.Range[int, 1, 90]) -> None:
+        await self.config.update(interaction.guild.id, log_retention_days=days)
+        await interaction.response.send_message(
+            embed=success_embed(f"Log retention set to **{days} days**.")
+        )
+
+    @config_group.command(name="reviewchannel", description="Set the channel for review notifications")
+    @app_commands.describe(channel="Channel for ML review notifications")
+    async def set_review_channel(self, interaction: discord.Interaction, channel: discord.TextChannel) -> None:
+        await self.config.update(interaction.guild.id, review_channel_id=channel.id)
+        await interaction.response.send_message(
+            embed=success_embed(f"Review channel set to {channel.mention}.")
+        )
+
+    @config_group.command(name="aggression", description="Configure aggression detection settings")
+    @app_commands.describe(
+        channel="Channel for aggression alerts",
+        strike_count="How many aggressive messages trigger an alert",
+        window_hours="Time window for strikes, in hours",
+    )
+    async def set_aggression_config(
+        self,
+        interaction: discord.Interaction,
+        channel: discord.TextChannel | None = None,
+        strike_count: app_commands.Range[int, 1, 10] | None = None,
+        window_hours: app_commands.Range[int, 1, 24] | None = None,
+    ) -> None:
+        fields: dict[str, int] = {}
+        if channel is not None:
+            fields["aggression_channel_id"] = channel.id
+        if strike_count is not None:
+            fields["aggression_strike_count"] = strike_count
+        if window_hours is not None:
+            fields["aggression_window_hours"] = window_hours
+
+        if not fields:
+            return await interaction.response.send_message(
+                embed=error_embed("Provide at least one setting to update."),
+                ephemeral=True,
+            )
+
+        cfg = await self.config.update(interaction.guild.id, **fields)
+        alert_channel = f"<#{cfg.aggression_channel_id}>" if cfg.aggression_channel_id else "Fallback channel"
+        await interaction.response.send_message(
+            embed=success_embed(
+                "Aggression detection updated.\n"
+                f"Alert Channel: {alert_channel}\n"
+                f"Threshold: {cfg.aggression_strike_count} strikes in {cfg.aggression_window_hours}h"
+            )
+        )
+
     @config_group.command(name="show", description="Show current server configuration")
     async def show_config(self, interaction: discord.Interaction) -> None:
         cfg = await self.config.get(interaction.guild.id)
@@ -80,6 +133,14 @@ class Config(commands.Cog):
             inline=False,
         )
         embed.add_field(name="ML Consent", value="Enabled" if cfg.ml_consent else "Disabled", inline=True)
+        embed.add_field(name="Log Retention", value=f"{cfg.log_retention_days} days", inline=True)
+        embed.add_field(name="Review Channel", value=ch(cfg.review_channel_id), inline=True)
+        embed.add_field(name="Aggression Alerts", value=ch(cfg.aggression_channel_id), inline=True)
+        embed.add_field(
+            name="Aggression Threshold",
+            value=f"{cfg.aggression_strike_count} strikes / {cfg.aggression_window_hours}h",
+            inline=True,
+        )
         await interaction.response.send_message(embed=embed)
 
     @config_group.command(name="reset", description="Reset all server configuration to defaults")

@@ -1,8 +1,4 @@
-"""Server-side session middleware backed by MongoDB.
 
-Stores only a signed session ID in the cookie. All session data lives in MongoDB,
-so there's no 4KB cookie size limit.
-"""
 from __future__ import annotations
 
 import logging
@@ -22,7 +18,6 @@ SESSION_TTL_SECONDS = 86400  # 24 hours
 
 
 class SessionDict(dict):
-    """Dict that tracks whether it has been modified."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

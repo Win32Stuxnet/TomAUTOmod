@@ -1,0 +1,3 @@
+# Add aggressive phrases here, one per line
+# These get labeled as "flagged" (less severe than slurs)
+# Lines starting with # are comments

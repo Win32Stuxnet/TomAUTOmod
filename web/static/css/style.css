@@ -23,7 +23,6 @@ body {
 
 a { color: var(--accent); text-decoration: none; }
 
-/* --- Buttons --- */
 .btn {
     display: inline-flex; align-items: center; gap: 8px;
     padding: 10px 20px;
@@ -57,7 +56,6 @@ a { color: var(--accent); text-decoration: none; }
 .landing-card h1 { margin-bottom: 12px; font-size: 28px; }
 .landing-card p { color: var(--text-muted); margin-bottom: 32px; }
 
-/* --- Navbar --- */
 .navbar {
     display: flex; align-items: center; justify-content: space-between;
     padding: 12px 24px;
@@ -71,7 +69,6 @@ a { color: var(--accent); text-decoration: none; }
 .nav-right { display: flex; align-items: center; gap: 16px; }
 .nav-user { color: var(--text-muted); font-size: 14px; }
 
-/* --- Container --- */
 .container {
     max-width: 960px;
     margin: 32px auto;
@@ -79,7 +76,6 @@ a { color: var(--accent); text-decoration: none; }
 }
 .muted { color: var(--text-muted); margin-bottom: 24px; }
 
-/* --- Guild Grid --- */
 .guild-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -102,7 +98,6 @@ a { color: var(--accent); text-decoration: none; }
     width: 40px; height: 40px; border-radius: 50%;
 }
 
-/* --- Tabs --- */
 .tabs {
     display: flex; gap: 4px;
     margin-bottom: 24px;
@@ -123,7 +118,6 @@ a { color: var(--accent); text-decoration: none; }
 .tab-content { display: none; }
 .tab-content.active { display: block; }
 
-/* --- Forms --- */
 .form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -180,7 +174,6 @@ h4.full {
     letter-spacing: 0.5px;
 }
 
-/* --- Inline Form --- */
 .inline-form {
     display: flex; gap: 8px;
     margin-bottom: 16px;
@@ -202,7 +195,6 @@ h4.full {
 }
 .inline-form input { flex: 1; min-width: 140px; }
 
-/* --- Data Table --- */
 .data-table {
     width: 100%;
     border-collapse: collapse;

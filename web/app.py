@@ -28,12 +28,7 @@ def create_app(settings: Settings, db: Database) -> FastAPI:
     app.state.settings = settings
     app.state.db = db
 
-    app.add_middleware(
-        MongoSessionMiddleware,
-        secret_key=settings.web_secret_key,
-        db=db,
-        secure_cookie=settings.web_base_url.startswith("https://"),
-    )
+    app.add_middleware(MongoSessionMiddleware, secret_key=settings.web_secret_key, db=db)
 
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 

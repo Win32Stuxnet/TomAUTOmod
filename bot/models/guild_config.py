@@ -20,6 +20,11 @@ class GuildConfig:
     raid_join_threshold: int = 10
     raid_join_interval_seconds: int = 10
     ml_consent: bool = False
+    log_retention_days: int = 30
+    review_channel_id: int | None = None
+    aggression_channel_id: int | None = None
+    aggression_strike_count: int = 3
+    aggression_window_hours: int = 2
 
     def to_doc(self) -> dict:
         return asdict(self)

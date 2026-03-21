@@ -20,90 +20,42 @@ router = APIRouter(tags=["api"])
 
 # --- Pydantic schemas ---
 
-VALID_ANTISPAM_ACTIONS = {"mute", "kick", "ban", "warn"}
-VALID_FILTER_TYPES = {"word", "regex", "wildcard"}
-VALID_FILTER_ACTIONS = {"delete", "warn", "mute", "kick", "ban"}
-MAX_PATTERN_LEN = 500
-MAX_COMMAND_NAME_LEN = 32
-MAX_RESPONSE_LEN = 2000
-MAX_WELCOME_LEN = 2000
-
-
 class ConfigUpdate(BaseModel):
     mod_log_channel_id: int | None = None
     audit_log_channel_id: int | None = None
     welcome_channel_id: int | None = None
-    welcome_message: str | None = Field(None, max_length=MAX_WELCOME_LEN)
+    welcome_message: str | None = None
     antispam_enabled: bool | None = None
-    antispam_max_messages: int | None = Field(None, ge=1, le=100)
-    antispam_interval_seconds: int | None = Field(None, ge=1, le=300)
+    antispam_max_messages: int | None = None
+    antispam_interval_seconds: int | None = None
     antispam_action: str | None = None
-    antispam_duration_seconds: int | None = Field(None, ge=0, le=2_592_000)
+    antispam_duration_seconds: int | None = None
     raid_protection_enabled: bool | None = None
-    raid_join_threshold: int | None = Field(None, ge=1, le=100)
-    raid_join_interval_seconds: int | None = Field(None, ge=1, le=300)
+    raid_join_threshold: int | None = None
+    raid_join_interval_seconds: int | None = None
     ml_consent: bool | None = None
-    log_retention_days: int | None = Field(None, ge=1, le=365)
+    log_retention_days: int | None = None
     review_channel_id: int | None = None
     aggression_channel_id: int | None = None
-    aggression_strike_count: int | None = Field(None, ge=1, le=100)
-    aggression_window_hours: int | None = Field(None, ge=1, le=720)
-
-    @field_validator("antispam_action")
-    @classmethod
-    def validate_antispam_action(cls, v: str | None) -> str | None:
-        if v is not None and v not in VALID_ANTISPAM_ACTIONS:
-            raise ValueError(f"Must be one of {VALID_ANTISPAM_ACTIONS}")
-        return v
+    aggression_strike_count: int | None = None
+    aggression_window_hours: int | None = None
 
 
 class FilterRuleCreate(BaseModel):
     rule_type: str
-    pattern: str = Field(..., min_length=1, max_length=MAX_PATTERN_LEN)
+    pattern: str
     action: str = "delete"
-
-    @field_validator("rule_type")
-    @classmethod
-    def validate_rule_type(cls, v: str) -> str:
-        if v not in VALID_FILTER_TYPES:
-            raise ValueError(f"Must be one of {VALID_FILTER_TYPES}")
-        return v
-
-    @field_validator("action")
-    @classmethod
-    def validate_action(cls, v: str) -> str:
-        if v not in VALID_FILTER_ACTIONS:
-            raise ValueError(f"Must be one of {VALID_FILTER_ACTIONS}")
-        return v
-
-    @field_validator("pattern")
-    @classmethod
-    def validate_pattern(cls, v: str, info) -> str:
-        if info.data.get("rule_type") == "regex":
-            try:
-                re.compile(v)
-            except re.error as e:
-                raise ValueError(f"Invalid regex: {e}")
-        return v
 
 
 class CustomCommandCreate(BaseModel):
-    name: str = Field(..., min_length=1, max_length=MAX_COMMAND_NAME_LEN)
-    response: str = Field(..., min_length=1, max_length=MAX_RESPONSE_LEN)
-    description: str = Field("", max_length=MAX_RESPONSE_LEN)
-
-    @field_validator("name")
-    @classmethod
-    def validate_name(cls, v: str) -> str:
-        v = v.lower().strip()
-        if not re.fullmatch(r"[a-z0-9_-]+", v):
-            raise ValueError("Only lowercase letters, numbers, hyphens, and underscores")
-        return v
+    name: str
+    response: str
+    description: str = ""
 
 
 class CustomCommandUpdate(BaseModel):
-    response: str | None = Field(None, min_length=1, max_length=MAX_RESPONSE_LEN)
-    description: str | None = Field(None, max_length=MAX_RESPONSE_LEN)
+    response: str | None = None
+    description: str | None = None
 
 
 # --- Helpers ---

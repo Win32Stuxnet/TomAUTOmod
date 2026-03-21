@@ -33,8 +33,20 @@ class Database:
         return self._db["message_cache"]
 
     @property
+    def custom_commands(self):
+        return self._db["custom_commands"]
+
+    @property
     def ml_training_data(self):
         return self._db["ml_training_data"]
+
+    @property
+    def aggression_strikes(self):
+        return self._db["aggression_strikes"]
+
+    @property
+    def aggression_training_data(self):
+        return self._db["aggression_training_data"]
 
     async def create_indexes(self) -> None:
         await self.guild_configs.create_indexes([
@@ -60,9 +72,28 @@ class Database:
             IndexModel([("created_at", ASCENDING)], expireAfterSeconds=7 * 24 * 3600),
         ])
 
+        await self.custom_commands.create_indexes([
+            IndexModel([("guild_id", ASCENDING), ("name", ASCENDING)], unique=True),
+        ])
+
+        await self._db["web_sessions"].create_indexes([
+            IndexModel([("updated_at", ASCENDING)], expireAfterSeconds=86400),
+        ])
+
         await self.ml_training_data.create_indexes([
             IndexModel([("guild_id", ASCENDING), ("message_id", ASCENDING)]),
             IndexModel([("label", ASCENDING)]),
+            IndexModel([("guild_id", ASCENDING), ("label", ASCENDING), ("confidence", DESCENDING)]),
+            IndexModel([("guild_id", ASCENDING), ("label", ASCENDING), ("created_at", DESCENDING)]),
+        ])
+
+        await self.aggression_strikes.create_indexes([
+            IndexModel([("guild_id", ASCENDING), ("user_id", ASCENDING), ("created_at", DESCENDING)]),
+        ])
+
+        await self.aggression_training_data.create_indexes([
+            IndexModel([("guild_id", ASCENDING), ("label", ASCENDING)]),
+            IndexModel([("message_id", ASCENDING)]),
         ])
 
         log.info("All database indexes ensured.")

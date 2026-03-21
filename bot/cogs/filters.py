@@ -217,7 +217,7 @@ class Filters(commands.Cog):
         cutoff = now - config.antispam_interval_seconds
         window[:] = [t for t in window if t > cutoff]
         window.append(now)
-
+#Check if the user is actually spamming, if less than max msg's in x time, ignore. 
         if len(window) < config.antispam_max_messages:
             return
 
@@ -228,7 +228,7 @@ class Filters(commands.Cog):
             return
 
         reason = f"Anti-spam: {config.antispam_max_messages} messages in {config.antispam_interval_seconds}s"
-
+#Mod actions based on config, if timeout, kick or ban. If timeout, use the duration from config.
         if config.antispam_action == "timeout":
             try:
                 await member.timeout(

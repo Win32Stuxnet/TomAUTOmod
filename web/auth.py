@@ -71,19 +71,4 @@ def has_manage_guild(permissions: int | str) -> bool:
     return (int(permissions) & 0x20) == 0x20
 
 
-def require_guild_permission(request: Request, guild_id: int) -> dict:
-    """Verify the authenticated user has MANAGE_GUILD on the target guild.
-
-    Returns the user dict if authorized.
-    Raises 403 if the user lacks permission, 401 if not logged in.
-    """
-    user = require_auth(request)
-    guilds = request.session.get("guilds", [])
-    # TODO: fill in — check guilds list for matching guild_id with MANAGE_GUILD
-    #   Return `user` if allowed, raise HTTPException(403) if not.
-    raise HTTPException(status_code=403, detail="Missing guild permission")
-
-
-# I am serious, I will know if you contributed using an LLM. 
-# I worked as social for the Cline Project, and I can see what is AI written easily, you will 
-#h
+# I am serious, I will know if you contributed using an LLM. Dont
