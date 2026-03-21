@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import re
 from datetime import datetime, timezone
+from typing import Literal
 
 from fastapi import APIRouter, Request, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator, Field
 
-from web.auth import require_auth
+from web.auth import require_guild_permission
 from bot.models.guild_config import GuildConfig
 from bot.models.filter_rules import FilterRule
 from bot.models.custom_command import CustomCommand
@@ -71,7 +73,7 @@ def _get_services(request: Request):
 
 @router.get("/guilds/{guild_id}/config")
 async def get_config(request: Request, guild_id: int):
-    require_auth(request)
+    require_guild_permission(request, guild_id)
     config_svc, _, _ = _get_services(request)
     cfg = await config_svc.get(guild_id)
     return cfg.to_doc()
@@ -79,7 +81,7 @@ async def get_config(request: Request, guild_id: int):
 
 @router.patch("/guilds/{guild_id}/config")
 async def update_config(request: Request, guild_id: int, body: ConfigUpdate):
-    require_auth(request)
+    require_guild_permission(request, guild_id)
     config_svc, _, _ = _get_services(request)
     fields = {k: v for k, v in body.model_dump().items() if v is not None}
     if not fields:
@@ -92,7 +94,7 @@ async def update_config(request: Request, guild_id: int, body: ConfigUpdate):
 
 @router.get("/guilds/{guild_id}/filters")
 async def get_filters(request: Request, guild_id: int):
-    require_auth(request)
+    require_guild_permission(request, guild_id)
     _, filter_svc, _ = _get_services(request)
     rules = await filter_svc.get_rules(guild_id)
     return [r.to_doc() for r in rules]
@@ -100,7 +102,7 @@ async def get_filters(request: Request, guild_id: int):
 
 @router.post("/guilds/{guild_id}/filters")
 async def add_filter(request: Request, guild_id: int, body: FilterRuleCreate):
-    user = require_auth(request)
+    user = require_guild_permission(request, guild_id)
     _, filter_svc, _ = _get_services(request)
     rule = FilterRule(
         guild_id=guild_id,
@@ -115,7 +117,7 @@ async def add_filter(request: Request, guild_id: int, body: FilterRuleCreate):
 
 @router.delete("/guilds/{guild_id}/filters/{pattern:path}")
 async def delete_filter(request: Request, guild_id: int, pattern: str):
-    require_auth(request)
+    require_guild_permission(request, guild_id)
     _, filter_svc, _ = _get_services(request)
     removed = await filter_svc.remove_rule(guild_id, pattern)
     if not removed:
@@ -127,7 +129,7 @@ async def delete_filter(request: Request, guild_id: int, pattern: str):
 
 @router.get("/guilds/{guild_id}/commands")
 async def get_commands(request: Request, guild_id: int):
-    require_auth(request)
+    require_guild_permission(request, guild_id)
     _, _, cmd_svc = _get_services(request)
     cmds = await cmd_svc.get_all(guild_id)
     return [c.to_doc() for c in cmds]
@@ -135,21 +137,18 @@ async def get_commands(request: Request, guild_id: int):
 
 @router.post("/guilds/{guild_id}/commands")
 async def create_command(request: Request, guild_id: int, body: CustomCommandCreate):
-    user = require_auth(request)
+    user = require_guild_permission(request, guild_id)
     _, _, cmd_svc = _get_services(request)
-    name = body.name.lower().strip()
-    if " " in name:
-        raise HTTPException(400, "Command name cannot contain spaces")
     cmd = CustomCommand(
         guild_id=guild_id,
-        name=name,
+        name=body.name,
         response=body.response,
         description=body.description,
         created_by=int(user["id"]),
     )
     ok = await cmd_svc.add(cmd)
     if not ok:
-        raise HTTPException(409, f"Command '{name}' already exists")
+        raise HTTPException(409, f"Command '{body.name}' already exists")
     return {"ok": True}
 
 
@@ -157,7 +156,7 @@ async def create_command(request: Request, guild_id: int, body: CustomCommandCre
 async def update_command(
     request: Request, guild_id: int, name: str, body: CustomCommandUpdate
 ):
-    require_auth(request)
+    require_guild_permission(request, guild_id)
     _, _, cmd_svc = _get_services(request)
     fields = {k: v for k, v in body.model_dump().items() if v is not None}
     if not fields:
@@ -170,7 +169,7 @@ async def update_command(
 
 @router.delete("/guilds/{guild_id}/commands/{name}")
 async def delete_command(request: Request, guild_id: int, name: str):
-    require_auth(request)
+    require_guild_permission(request, guild_id)
     _, _, cmd_svc = _get_services(request)
     ok = await cmd_svc.remove(guild_id, name)
     if not ok:

@@ -71,6 +71,4 @@ def has_manage_guild(permissions: int | str) -> bool:
     return (int(permissions) & 0x20) == 0x20
 
 
-# I am serious, I will know if you contributed using an LLM. 
-# I worked as social for the Cline Project, and I can see what is AI written easily, you will 
-#h
+# I am serious, I will know if you contributed using an LLM. Dont

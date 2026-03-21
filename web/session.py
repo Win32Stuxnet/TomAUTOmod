@@ -1,8 +1,4 @@
-"""Server-side session middleware backed by MongoDB.
 
-Stores only a signed session ID in the cookie. All session data lives in MongoDB,
-so there's no 4KB cookie size limit.
-"""
 from __future__ import annotations
 
 import logging
@@ -22,7 +18,6 @@ SESSION_TTL_SECONDS = 86400  # 24 hours
 
 
 class SessionDict(dict):
-    """Dict that tracks whether it has been modified."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -46,10 +41,11 @@ class SessionDict(dict):
 
 
 class MongoSessionMiddleware(BaseHTTPMiddleware):
-    def __init__(self, app, secret_key: str, db) -> None:
+    def __init__(self, app, secret_key: str, db, secure_cookie: bool = False) -> None:
         super().__init__(app)
         self.signer = itsdangerous.TimestampSigner(secret_key)
         self.db = db
+        self.secure_cookie = secure_cookie
 
     @property
     def collection(self):
@@ -97,6 +93,7 @@ class MongoSessionMiddleware(BaseHTTPMiddleware):
                     signed,
                     max_age=SESSION_TTL_SECONDS,
                     httponly=True,
+                    secure=self.secure_cookie,
                     samesite="lax",
                     path="/",
                 )

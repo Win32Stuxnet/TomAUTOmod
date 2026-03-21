@@ -41,15 +41,14 @@ async def callback(request: Request, code: str, state: str) -> RedirectResponse:
         return RedirectResponse("/login", status_code=302)
 
     settings = request.app.state.settings
-    async with DiscordClient() as client:
-        tokens = await client.exchange_code(
+    async with DiscordClient() as auth_client:
+        tokens = await auth_client.exchange_code(
             settings.discord_client_id,
             settings.discord_client_secret,
             code,
             f"{settings.web_base_url}/callback",
         )
-        access_token = tokens["access_token"]
-        client._session.headers.update({"Authorization": f"Bearer {access_token}"})
+    async with DiscordClient(tokens["access_token"]) as client:
         user = await client.fetch_user()
         guilds = await client.fetch_guilds()
 
@@ -57,7 +56,6 @@ async def callback(request: Request, code: str, state: str) -> RedirectResponse:
         "id": user["id"],
         "username": user["username"],
         "avatar": user.get("avatar"),
-        "access_token": access_token,
     }
     # Only store minimal guild data to stay within cookie size limits (~4KB)
     request.session["guilds"] = [

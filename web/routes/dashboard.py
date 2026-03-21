@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from html import escape
 from pathlib import Path
 
 from fastapi import APIRouter, Request
@@ -41,20 +42,23 @@ async def dashboard(request: Request) -> HTMLResponse:
 
     guild_cards = ""
     for g in manageable:
+        gid = escape(str(g["id"]))
+        name = escape(g["name"])
+        icon_hash = escape(str(g.get("icon", "")))
         icon = (
-            f"https://cdn.discordapp.com/icons/{g['id']}/{g['icon']}.png"
+            f"https://cdn.discordapp.com/icons/{gid}/{icon_hash}.png"
             if g.get("icon")
             else "https://cdn.discordapp.com/embed/avatars/0.png"
         )
         guild_cards += f"""
-        <a href="/dashboard/{g['id']}" class="guild-card">
-            <img src="{icon}" alt="{g['name']}">
-            <span>{g['name']}</span>
+        <a href="/dashboard/{gid}" class="guild-card">
+            <img src="{icon}" alt="{name}">
+            <span>{name}</span>
         </a>"""
 
     return _render(
         "dashboard.html",
-        username=user["username"],
+        username=escape(user["username"]),
         guild_cards=guild_cards,
     )
 
