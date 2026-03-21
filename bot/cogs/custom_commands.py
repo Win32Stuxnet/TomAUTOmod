@@ -103,9 +103,13 @@ class CustomCommands(commands.Cog):
         prefix = "!"
         if not message.content.startswith(prefix):
             return
-
-        name = message.content[len(prefix):].split()[0].lower()
+        remainder = message.content[len(prefix)]
+        if not remainder:
+            return
+        name = remainder.split(maxsplit=1)[0].lower()
         cmd = await self.service.get(message.guild.id, name)
+        name = parts[0].lower()
+        args = parts[1] if len(parts) > 1 else ""
         if cmd:
             await message.channel.send(cmd.response)
 
